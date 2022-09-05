@@ -10,7 +10,11 @@ require (
 	firebase.google.com/go/v4 v4.8.0 // indirect
 	github.com/GoogleCloudPlatform/functions-framework-go v1.6.1
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/google/martian v2.1.0+incompatible // indirect
+	github.com/google/martian/v3 v3.2.1
 	github.com/googleapis/gax-go/v2 v2.5.1 // indirect
+	github.com/magiconair/properties v1.8.6
+	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	google.golang.org/appengine/v2 v2.0.2 // indirect

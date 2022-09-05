@@ -4,11 +4,12 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
-	"fmt"
 	_ "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
-	"log"
 	"time"
+	"zipsa.alarm/zlog"
 )
+
+var log = zlog.Instance()
 
 type FirestoreEvent struct {
 	OldValue   FirestoreValue `json:"oldValue"`
@@ -35,25 +36,25 @@ type FirestoreData struct {
 }
 
 func Main(ctx context.Context, e FirestoreEvent) error {
-	createTime := e.Value.CreateTime
-	updateTime := e.Value.UpdateTime
+	createTime := e.Value.CreateTime.Format("2006-01-02 15:04:05")
+	updateTime := e.Value.UpdateTime.Format("2006-01-02 15:04:05")
 	titleValue := e.Value.Fields.Title.StringValue
 	bodyValue := e.Value.Fields.Body.StringValue
 
-	fmt.Println("CreateTime= ", createTime)
-	fmt.Println("UpdateTime= ", updateTime)
-	fmt.Println("Title= ", titleValue)
-	fmt.Println("Body= ", bodyValue)
+	log.Infof("CreateTime = %s", createTime)
+	log.Infof("UpdateTime = %s", updateTime)
+	log.Infof("Title = %s", titleValue)
+	log.Infof("Body = %s", bodyValue)
 
 	app, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
-		log.Fatalf("Error Initializing App: %v\n", err)
+		log.Errorf("Error Initializing App: %s", err.Error())
 		return err
 	}
 
 	client, err := app.Messaging(ctx)
 	if err != nil {
-		log.Fatalf("Error Getting Messaging Client: %v\n", err)
+		log.Errorf("Error Getting Messaging Client: %s", err.Error())
 		return err
 	}
 
@@ -63,21 +64,26 @@ func Main(ctx context.Context, e FirestoreEvent) error {
 		Data: map[string]string{
 			"title":      titleValue,
 			"body":       bodyValue,
-			"createTime": createTime.Format("2006-01-02 15:04:05"),
-			"updateTime": updateTime.Format("2006-01-02 15:04:05"),
+			"createTime": createTime,
+			"updateTime": updateTime,
 		},
 		Topic: topic,
 	}
 
 	response, err := client.Send(ctx, message)
 	if err != nil {
-		log.Fatalln(err)
+		log.Errorf("Error Sending Alarm: %s", err.Error())
 		return err
 	}
 	// Response is a message ID string.
-	fmt.Println("Successfully sent message:", response)
+	log.Infof("Successfully sent message = %s", response)
 
-	fmt.Println("response = " + response + "\ntitle = " + message.Data["title"] + "\nbody = " + message.Data["body"] + "\ncreateTime = " + message.Data["createTime"] + "\nupdateTime = " + message.Data["updateTime"] + "\ntopic = " + message.Topic)
+	log.Infof("response = %s", response)
+	log.Infof("title = %s", message.Data["title"])
+	log.Infof("body = %s", message.Data["body"])
+	log.Infof("createTime = %s", message.Data["createTime"])
+	log.Infof("updateTime = %s", message.Data["updateTime"])
+	log.Infof("topic = %s", message.Topic)
 
 	return nil
 }
