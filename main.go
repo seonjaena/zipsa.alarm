@@ -33,6 +33,9 @@ type FirestoreData struct {
 	Body struct {
 		StringValue string `json:"stringValue"`
 	} `json:"body"`
+	Topic struct {
+		StringValue string `json:"stringValue"`
+	} `json:"topic"`
 }
 
 func Main(ctx context.Context, e FirestoreEvent) error {
@@ -40,11 +43,13 @@ func Main(ctx context.Context, e FirestoreEvent) error {
 	updateTime := e.Value.UpdateTime.Format("2006-01-02 15:04:05")
 	titleValue := e.Value.Fields.Title.StringValue
 	bodyValue := e.Value.Fields.Body.StringValue
+	topic := e.Value.Fields.Topic.StringValue
 
 	log.Infof("CreateTime = %s", createTime)
 	log.Infof("UpdateTime = %s", updateTime)
 	log.Infof("Title = %s", titleValue)
 	log.Infof("Body = %s", bodyValue)
+	log.Infof("Topic = %s", topic)
 
 	app, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
@@ -57,8 +62,6 @@ func Main(ctx context.Context, e FirestoreEvent) error {
 		log.Errorf("Error Getting Messaging Client: %s", err.Error())
 		return err
 	}
-
-	topic := "highScores"
 
 	message := &messaging.Message{
 		Data: map[string]string{
@@ -83,7 +86,7 @@ func Main(ctx context.Context, e FirestoreEvent) error {
 	log.Infof("body = %s", message.Data["body"])
 	log.Infof("createTime = %s", message.Data["createTime"])
 	log.Infof("updateTime = %s", message.Data["updateTime"])
-	log.Infof("topic = %s", message.Topic)
+	log.Infof("topic = %s", topic)
 
 	return nil
 }
