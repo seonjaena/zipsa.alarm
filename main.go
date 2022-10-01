@@ -36,6 +36,9 @@ type FirestoreData struct {
 	Topic struct {
 		StringValue string `json:"stringValue"`
 	} `json:"topic"`
+	Token struct {
+		StringValue string `json:"stringValue"`
+	} `json:"token"`
 }
 
 func Main(ctx context.Context, e FirestoreEvent) error {
@@ -44,12 +47,14 @@ func Main(ctx context.Context, e FirestoreEvent) error {
 	titleValue := e.Value.Fields.Title.StringValue
 	bodyValue := e.Value.Fields.Body.StringValue
 	topic := e.Value.Fields.Topic.StringValue
+	token := e.Value.Fields.Token.StringValue
 
 	log.Infof("CreateTime = %s", createTime)
 	log.Infof("UpdateTime = %s", updateTime)
 	log.Infof("Title = %s", titleValue)
 	log.Infof("Body = %s", bodyValue)
 	log.Infof("Topic = %s", topic)
+	log.Infof("Token = %s", token)
 
 	app, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
@@ -63,14 +68,25 @@ func Main(ctx context.Context, e FirestoreEvent) error {
 		return err
 	}
 
-	message := &messaging.Message{
-		Data: map[string]string{
-			"title":      titleValue,
-			"body":       bodyValue,
-			"createTime": createTime,
-			"updateTime": updateTime,
-		},
-		Topic: topic,
+	var message *messaging.Message
+	if topic != "" {
+		message = &messaging.Message{
+			Data: map[string]string{
+				"title":      titleValue,
+				"body":       bodyValue,
+				"createTime": createTime,
+				"updateTime": updateTime,
+			},
+			Topic: topic,
+		}
+	} else {
+		message = &messaging.Message{
+			Data: map[string]string{
+				"score": "850",
+				"time":  "2:45",
+			},
+			Token: token,
+		}
 	}
 
 	response, err := client.Send(ctx, message)
